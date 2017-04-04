@@ -12,36 +12,36 @@ type Level int
 
 // log level
 const (
-	LEVEL_DEBUG Level = 0
-	LEVEL_TRACE Level = 1
-	LEVEL_INFO Level = 2
-	LEVEL_WARN Level = 3
-	LEVEL_ERROR Level = 4
+	LEVEL_DEBUG  = iota
+	LEVEL_TRACE
+	LEVEL_INFO
+	LEVEL_WARN
+	LEVEL_ERROR
 )
 
 // print info log
-func Info(format string, v...string) {
-	Log(os.Stdout, LEVEL_INFO, format, v)
+func Info(format string, v...interface{}) {
+	Log(os.Stdout, LEVEL_INFO, fmt.Sprintf(format, v...))
 }
 
 // print trace log
-func Trace(format string, v...string) {
-	Log(os.Stdout, LEVEL_TRACE, format, v)
+func Trace(format string, v...interface{}) {
+	Log(os.Stdout, LEVEL_TRACE, fmt.Sprintf(format, v...))
 }
 
 // print debug log
-func Debug(format string, v...string) {
-	Log(os.Stdout, LEVEL_DEBUG, format, v)
+func Debug(format string, v...interface{}) {
+	Log(os.Stdout, LEVEL_DEBUG, fmt.Sprintf(format, v...))
 }
 
 // print warning log
-func Warn(format string, v...string) {
-	Log(os.Stdout, LEVEL_WARN, format, v)
+func Warn(format string, v...interface{}) {
+	Log(os.Stdout, LEVEL_WARN, fmt.Sprintf(format, v...))
 }
 
 // print error log
-func Error(format string, v...string) {
-	Log(os.Stdout, LEVEL_ERROR, format, v)
+func Error(format string, v...interface{}) {
+	Log(os.Stdout, LEVEL_ERROR, fmt.Sprintf(format, v...))
 }
 
 // get log level text
@@ -86,14 +86,8 @@ func TimeLog() string {
 }
 
 // print log
-func Log(out io.Writer, level Level, format string, v []string) {
-	msg := format
-	if len(v) > 0 {
-		msg = fmt.Sprintf(format, v[0])
-	}
-	//// 时间/线程/级别/日志
+func Log(out io.Writer, level Level, txt string) {
 	prefix := fmt.Sprintf("[%s] %s\t=> ", TimeLog(), LevelText(level))
-
 	out.Write([]byte(Color(prefix, level)))
-	out.Write([]byte(color.Color(color.LightGray, color.Normal, msg) + "\n"))
+	out.Write([]byte(color.Color(color.LightGray, color.Normal, txt) + "\n"))
 }

@@ -23,5 +23,4 @@ func TestLog()  {
 func main() {
 	TestColor()
 	TestLog()
-	//fmt.Println("\033[32;1m我被变成了蓝色，\033[0m我是原来的颜色")
 }

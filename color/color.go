@@ -1,9 +1,9 @@
 package color
 
 import (
-	"strconv"
 	"fmt"
 	"runtime"
+	"strconv"
 )
 
 const (
@@ -40,20 +40,12 @@ const (
 )
 
 // 打印颜色到控制台
-func Print(c int, str... string) () {
-	txt := str[0]
-	if len(str) > 1 {
-		txt = fmt.Sprintf(str[0], str[1])
-	}
-	fmt.Print(Color(c, Normal, txt))
+func Print(c int, format string, v... interface{}) () {
+	fmt.Print(Color(c, Normal, fmt.Sprintf(format, v...)))
 }
 
-func Println(c int, str... string) () {
-	txt := str[0]
-	if len(str) > 1 {
-		txt = fmt.Sprintf(str[0], str[1])
-	}
-	fmt.Println(Color(c, Normal, txt))
+func Println(c int, format string, v... interface{}) () {
+	fmt.Println(Color(c, Normal, fmt.Sprintf(format, v...)))
 }
 
 // 返回带颜色的字符串
@@ -72,9 +64,9 @@ func IsWindows() bool {
 }
 
 // render string to output
-func Render(colorCode int, fontSize int, txt string) string {
+func Render(color int, font int, txt string) string {
 	if IsWindows() {
 		return txt
 	}
-	return "\033[" + strconv.Itoa(colorCode) + ";" + strconv.Itoa(fontSize) + "m" + txt + Reset
+	return "\x1b\033[" + strconv.Itoa(color) + "m" + txt + Reset
 }
