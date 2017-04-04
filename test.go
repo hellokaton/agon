@@ -13,6 +13,7 @@ func TestColor(){
 }
 
 func TestLog()  {
+	//log.ConfigLog("test.log")
 	log.Info("Hello Rose")
 	log.Debug("Hello %s", "jack")
 	log.Warn("Hello %s", "jack")

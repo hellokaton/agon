@@ -41,17 +41,17 @@ const (
 
 // 打印颜色到控制台
 func Print(c int, format string, v... interface{}) () {
-	fmt.Print(Color(c, Normal, fmt.Sprintf(format, v...)))
+	fmt.Print(Color(c, fmt.Sprintf(format, v...)))
 }
 
 func Println(c int, format string, v... interface{}) () {
-	fmt.Println(Color(c, Normal, fmt.Sprintf(format, v...)))
+	fmt.Println(Color(c, fmt.Sprintf(format, v...)))
 }
 
 // 返回带颜色的字符串
 // c为颜色代码，f为字体格式
-func Color(c int, f int, str string) string {
-	return Render(c, f, str)
+func Color(c int, str string) string {
+	return Render(c, str)
 }
 
 // 判断是否是windows系统
@@ -64,7 +64,7 @@ func IsWindows() bool {
 }
 
 // render string to output
-func Render(color int, font int, txt string) string {
+func Render(color int, txt string) string {
 	if IsWindows() {
 		return txt
 	}
