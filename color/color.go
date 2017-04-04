@@ -6,8 +6,6 @@ import (
 	"runtime"
 )
 
-type ColorType int
-
 const (
 	// common
 	Reset = "\033[0m"
@@ -18,8 +16,8 @@ const (
 	Blink = 5
 	Reverse = 7
 	Hidden = 8
-	// color
 
+	// color
 	Black = 30
 	Red = 31
 	Green = 32
@@ -42,13 +40,25 @@ const (
 )
 
 // 打印颜色到控制台
-func Print(c ColorType, str... string) () {
-	fmt.Println(Color(c, Normal, str))
+func Print(c int, str... string) () {
+	txt := str[0]
+	if len(str) > 1 {
+		txt = fmt.Sprintf(str[0], str[1])
+	}
+	fmt.Print(Color(c, Normal, txt))
+}
+
+func Println(c int, str... string) () {
+	txt := str[0]
+	if len(str) > 1 {
+		txt = fmt.Sprintf(str[0], str[1])
+	}
+	fmt.Println(Color(c, Normal, txt))
 }
 
 // 返回带颜色的字符串
 // c为颜色代码，f为字体格式
-func Color(c ColorType, f ColorType, str... string) string {
+func Color(c int, f int, str string) string {
 	return Render(c, f, str)
 }
 
@@ -62,11 +72,7 @@ func IsWindows() bool {
 }
 
 // render string to output
-func Render(colorCode ColorType, fontSize ColorType, str... string) string {
-	txt := str[0]
-	if len(str) > 1 {
-		txt = fmt.Sprintf(str[0], str[1])
-	}
+func Render(colorCode int, fontSize int, txt string) string {
 	if IsWindows() {
 		return txt
 	}
