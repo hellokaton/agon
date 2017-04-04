@@ -76,7 +76,5 @@ func Render(colorCode int, fontSize int, txt string) string {
 	if IsWindows() {
 		return txt
 	}
-	c := int(colorCode)
-	f := int(fontSize)
-	return "\033[" + strconv.Itoa(f) + ";" + strconv.Itoa(c) + "m" + txt + Reset
+	return "\033[" + strconv.Itoa(colorCode) + ";" + strconv.Itoa(fontSize) + "m" + txt + Reset
 }
