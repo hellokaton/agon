@@ -12,10 +12,37 @@ import (
 type Level int
 
 type Logger struct {
-	TimePattern string
-	LogPath     string
-	LogLevel    Level
-	LogColor    int
+	_TimePattern string
+	_LogPath     string
+	_LogLevel    Level
+	_LogColor    map[Level]int
+	_TextColor   int
+	_Prefix      string
+}
+
+func (log *Logger) Prefix(Prefix string) *Logger {
+	log._Prefix = Prefix
+	return log
+}
+
+func (log *Logger) LogPath(LogPath string) *Logger {
+	log._LogPath = LogPath
+	return log
+}
+
+func (log *Logger) TimePattern(TimePattern string) *Logger {
+	log._TimePattern = TimePattern
+	return log
+}
+
+func (log *Logger) TextColor(TextColor int) *Logger {
+	log._TextColor = TextColor
+	return log
+}
+
+func (log *Logger) LogColor(LogColor map[Level]int) *Logger {
+	log._LogColor = LogColor
+	return log
 }
 
 // log level
@@ -27,50 +54,51 @@ const (
 	LEVEL_ERROR
 )
 
-var _logger Logger = Logger{TimePattern: "01/02 15:04:05.000", LogLevel: LEVEL_DEBUG}
-
 // config logger
-func ConfigLog(log Logger) {
-	_logger = log
+func NewLog() *Logger {
+	log := &Logger{}
+	log._TimePattern = "01/02 15:04:05.000"
+	log._LogLevel = LEVEL_DEBUG
+	return log
 }
 
 // print info log
-func Info(format string, v ...interface{}) {
-	if _logger.LogLevel <= LEVEL_INFO {
-		Log(os.Stdout, LEVEL_INFO, fmt.Sprintf(format, v...))
+func (log *Logger) Info(format string, v ...interface{}) {
+	if log._LogLevel <= LEVEL_INFO {
+		log.Log(os.Stdout, LEVEL_INFO, fmt.Sprintf(format, v...))
 	}
 }
 
 // print trace log
-func Trace(format string, v ...interface{}) {
-	if _logger.LogLevel <= LEVEL_TRACE {
-		Log(os.Stdout, LEVEL_TRACE, fmt.Sprintf(format, v...))
+func (log *Logger) Trace(format string, v ...interface{}) {
+	if log._LogLevel <= LEVEL_TRACE {
+		log.Log(os.Stdout, LEVEL_TRACE, fmt.Sprintf(format, v...))
 	}
 }
 
 // print debug log
-func Debug(format string, v ...interface{}) {
-	if _logger.LogLevel <= LEVEL_DEBUG {
-		Log(os.Stdout, LEVEL_DEBUG, fmt.Sprintf(format, v...))
+func (log *Logger) Debug(format string, v ...interface{}) {
+	if log._LogLevel <= LEVEL_DEBUG {
+		log.Log(os.Stdout, LEVEL_DEBUG, fmt.Sprintf(format, v...))
 	}
 }
 
 // print warning log
-func Warn(format string, v ...interface{}) {
-	if _logger.LogLevel <= LEVEL_WARN {
-		Log(os.Stdout, LEVEL_WARN, fmt.Sprintf(format, v...))
+func (log *Logger) Warn(format string, v ...interface{}) {
+	if log._LogLevel <= LEVEL_WARN {
+		log.Log(os.Stdout, LEVEL_WARN, fmt.Sprintf(format, v...))
 	}
 }
 
 // print error log
-func Error(format string, v ...interface{}) {
-	if _logger.LogLevel <= LEVEL_ERROR {
-		Log(os.Stdout, LEVEL_ERROR, fmt.Sprintf(format, v...))
+func (log *Logger) Error(format string, v ...interface{}) {
+	if log._LogLevel <= LEVEL_ERROR {
+		log.Log(os.Stdout, LEVEL_ERROR, fmt.Sprintf(format, v...))
 	}
 }
 
 // get log level text
-func LevelText(level Level) string {
+func (log *Logger) LevelText(level Level) string {
 	switch {
 	case level == LEVEL_INFO:
 		return "INFO"
@@ -88,7 +116,10 @@ func LevelText(level Level) string {
 }
 
 // get log level color
-func Color(str string, level Level) string {
+func (log *Logger) Color(str string, level Level) string {
+	if c, ok := log._LogColor[level]; ok {
+		return color.Color(c, str)
+	}
 	switch {
 	case level == LEVEL_INFO:
 		return color.Color(color.Green, str)
@@ -106,30 +137,30 @@ func Color(str string, level Level) string {
 }
 
 // return time log
-func TimeLog() string {
-	return time.Now().Format(_logger.TimePattern)
+func (log *Logger) TimeLog() string {
+	return time.Now().Format(log._TimePattern)
 }
 
 // print log
-func Log(out io.Writer, level Level, txt string) {
-	prefix := fmt.Sprintf("[%s] %s\t=> ", TimeLog(), LevelText(level))
-	out.Write([]byte(Color(prefix, level)))
+func (log *Logger) Log(out io.Writer, level Level, txt string) {
+	prefix := fmt.Sprintf("%s[%s] %s\t=> ", log._Prefix, log.TimeLog(), log.LevelText(level))
+	out.Write([]byte(log.Color(prefix, level)))
 	out.Write([]byte(txt + "\n"))
-	store(prefix + txt)
+	log.store(prefix + txt)
 }
 
 // store log
-func store(txt string) {
-	if !strings.EqualFold("", _logger.LogPath) {
-		os.OpenFile(_logger.LogPath, os.O_CREATE, 0711)
-		fout, err := os.OpenFile(_logger.LogPath, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+func (log *Logger) store(txt string) {
+	if !strings.EqualFold("", log._LogPath) {
+		os.OpenFile(log._LogPath, os.O_CREATE, 0711)
+		fout, err := os.OpenFile(log._LogPath, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 		if err != nil {
-			fmt.Println(color.Color(color.Red, _logger.LogPath+err.Error()))
+			fmt.Println(color.Color(color.Red, log._LogPath+err.Error()))
 			return
 		}
 		defer fout.Close()
-		if _logger.LogColor > 0 {
-			fout.WriteString(color.Color(_logger.LogColor, txt+"\n"))
+		if log._TextColor > 0 {
+			fout.WriteString(color.Color(log._TextColor, txt+"\n"))
 		} else {
 			fout.WriteString(txt + "\n")
 		}

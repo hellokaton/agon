@@ -22,7 +22,9 @@ func TestColor(){
 }
 
 func TestLog()  {
-	//log.ConfigLog("test.log")
+	log := log.NewLog()
+	log.Prefix("[Hello]")
+	//log.LogPath("test.log")
 	log.Info("Hello Rose")
 	log.Debug("Hello %s", "jack")
 	log.Warn("Hello %s", "jack")
@@ -42,6 +44,7 @@ func TestJson()  {
 }
 
 func TestTime()  {
+	log := log.NewLog()
 	// 获取当前unix时间戳
 	log.Info(strconv.FormatInt(time.UnixTime(), 10))
 }
