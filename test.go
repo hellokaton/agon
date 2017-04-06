@@ -5,6 +5,8 @@ import (
 	"github.com/biezhi/agon/log"
 	"github.com/biezhi/agon/json"
 	"fmt"
+	"github.com/biezhi/agon/time"
+	"strconv"
 )
 
 type Person struct{
@@ -39,8 +41,14 @@ func TestJson()  {
 	fmt.Println(json.Stringify(p))
 }
 
+func TestTime()  {
+	// 获取当前unix时间戳
+	log.Info(strconv.FormatInt(time.UnixTime(), 10))
+}
+
 func main() {
 	TestColor()
 	TestLog()
-	TestJson()
+	//TestJson()
+	//TestTime()
 }

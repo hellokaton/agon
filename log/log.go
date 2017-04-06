@@ -11,6 +11,13 @@ import (
 
 type Level int
 
+type Logger struct {
+	TimePattern string
+	LogPath     string
+	LogLevel    Level
+	LogColor    int
+}
+
 // log level
 const (
 	LEVEL_DEBUG = iota
@@ -20,38 +27,46 @@ const (
 	LEVEL_ERROR
 )
 
-var (
-	TimePattern = "01/02 15:04:05.000"
-	LogPath = ""
-)
+var _logger Logger = Logger{TimePattern: "01/02 15:04:05.000", LogLevel: LEVEL_DEBUG}
 
-func ConfigLog(_path string) {
-	LogPath = _path
+// config logger
+func ConfigLog(log Logger) {
+	_logger = log
 }
 
 // print info log
-func Info(format string, v...interface{}) {
-	Log(os.Stdout, LEVEL_INFO, fmt.Sprintf(format, v...))
+func Info(format string, v ...interface{}) {
+	if _logger.LogLevel <= LEVEL_INFO {
+		Log(os.Stdout, LEVEL_INFO, fmt.Sprintf(format, v...))
+	}
 }
 
 // print trace log
-func Trace(format string, v...interface{}) {
-	Log(os.Stdout, LEVEL_TRACE, fmt.Sprintf(format, v...))
+func Trace(format string, v ...interface{}) {
+	if _logger.LogLevel <= LEVEL_TRACE {
+		Log(os.Stdout, LEVEL_TRACE, fmt.Sprintf(format, v...))
+	}
 }
 
 // print debug log
-func Debug(format string, v...interface{}) {
-	Log(os.Stdout, LEVEL_DEBUG, fmt.Sprintf(format, v...))
+func Debug(format string, v ...interface{}) {
+	if _logger.LogLevel <= LEVEL_DEBUG {
+		Log(os.Stdout, LEVEL_DEBUG, fmt.Sprintf(format, v...))
+	}
 }
 
 // print warning log
-func Warn(format string, v...interface{}) {
-	Log(os.Stdout, LEVEL_WARN, fmt.Sprintf(format, v...))
+func Warn(format string, v ...interface{}) {
+	if _logger.LogLevel <= LEVEL_WARN {
+		Log(os.Stdout, LEVEL_WARN, fmt.Sprintf(format, v...))
+	}
 }
 
 // print error log
-func Error(format string, v...interface{}) {
-	Log(os.Stdout, LEVEL_ERROR, fmt.Sprintf(format, v...))
+func Error(format string, v ...interface{}) {
+	if _logger.LogLevel <= LEVEL_ERROR {
+		Log(os.Stdout, LEVEL_ERROR, fmt.Sprintf(format, v...))
+	}
 }
 
 // get log level text
@@ -92,27 +107,31 @@ func Color(str string, level Level) string {
 
 // return time log
 func TimeLog() string {
-	return time.Now().Format(TimePattern)
+	return time.Now().Format(_logger.TimePattern)
 }
 
 // print log
 func Log(out io.Writer, level Level, txt string) {
 	prefix := fmt.Sprintf("[%s] %s\t=> ", TimeLog(), LevelText(level))
 	out.Write([]byte(Color(prefix, level)))
-	out.Write([]byte(color.Color(color.LightGray, txt) + "\n"))
+	out.Write([]byte(txt + "\n"))
 	store(prefix + txt)
 }
 
 // store log
 func store(txt string) {
-	if !strings.EqualFold("", LogPath) {
-		os.OpenFile(LogPath, os.O_CREATE, 0711)
-		fout, err := os.OpenFile(LogPath, os.O_APPEND | os.O_WRONLY, os.ModeAppend)
+	if !strings.EqualFold("", _logger.LogPath) {
+		os.OpenFile(_logger.LogPath, os.O_CREATE, 0711)
+		fout, err := os.OpenFile(_logger.LogPath, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 		if err != nil {
-			fmt.Println(color.Color(color.Red, LogPath + err.Error()))
+			fmt.Println(color.Color(color.Red, _logger.LogPath+err.Error()))
 			return
 		}
 		defer fout.Close()
-		fout.WriteString(txt + "\n")
+		if _logger.LogColor > 0 {
+			fout.WriteString(color.Color(_logger.LogColor, txt+"\n"))
+		} else {
+			fout.WriteString(txt + "\n")
+		}
 	}
 }
