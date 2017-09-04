@@ -62,73 +62,68 @@ func MkDir(filepath string) error {
 	return nil
 }
 
-func CopyFile(src, des string) (w int64, err error) {
-	srcFile, err := os.Open(src)
-	if err != nil {
-		return 0, err
-	}
-	defer srcFile.Close()
-
-	desFile, err := os.Create(des)
-	if err != nil {
-		return 0, err
-	}
-	defer desFile.Close()
-
-	return io.Copy(desFile, srcFile)
-}
-
 func CopyDir(source string, dest string) (err error) {
 
-	// get properties of source dir
-	fi, err := os.Stat(source)
+	sourceinfo, err := os.Stat(source)
 	if err != nil {
 		return err
 	}
 
-	if !fi.IsDir() {
-		return errors.New("Source is not a directory")
-	}
-
-	// ensure dest dir does not already exist
-
-	_, err = os.Open(dest)
-	if !os.IsNotExist(err) {
-
-		err = os.RemoveAll(dest)
-		if err != nil {
-			return err
-		}
-		//return errors.New("Destination already exists")
-	}
-
-	// create dest dir
-
-	err = os.MkdirAll(dest, fi.Mode())
+	err = os.MkdirAll(dest, sourceinfo.Mode())
 	if err != nil {
 		return err
 	}
 
-	entries, err := ioutil.ReadDir(source)
+	directory, _ := os.Open(source)
 
-	for _, entry := range entries {
+	objects, err := directory.Readdir(-1)
 
-		sfp := source + "/" + entry.Name()
-		dfp := dest + "/" + entry.Name()
-		if entry.IsDir() {
-			err = CopyDir(sfp, dfp)
+	for _, obj := range objects {
+
+		sourcefilepointer := source + "/" + obj.Name()
+
+		destinationfilepointer := dest + "/" + obj.Name()
+
+		if obj.IsDir() {
+			err = CopyDir(sourcefilepointer, destinationfilepointer)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
 			}
 		} else {
-			// perform copy
-			_, err = CopyFile(sfp, dfp)
+			err = CopyFile(sourcefilepointer, destinationfilepointer)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
 			}
 		}
 
 	}
+	return
+}
+
+func CopyFile(source string, dest string) (err error) {
+	sourcefile, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+
+	defer sourcefile.Close()
+
+	destfile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+
+	defer destfile.Close()
+
+	_, err = io.Copy(destfile, sourcefile)
+	if err == nil {
+		sourceinfo, err := os.Stat(source)
+		if err != nil {
+			err = os.Chmod(dest, sourceinfo.Mode())
+		}
+
+	}
+
 	return
 }
 
